@@ -1,0 +1,14 @@
+{
+    "name": "sharik709/laravel-transpay",
+    "description": "It will allow you connect laravel and transpay",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sharik shaikh",
+            "email": "shaikhsharik709@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
