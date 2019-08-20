@@ -2,7 +2,7 @@
 
 namespace TransPay\Test;
 
-use MongoDB\BSON\Type;
+use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use TransPay\Exceptions\InvalidAddressException;
 use TransPay\Exceptions\ValueNotValidException;
@@ -11,6 +11,7 @@ require 'functions.php';
 
 class SenderTest extends TestCase
 {
+    use WithFaker;
     protected $instance;
     protected function setUp() : void {
         parent::setUp();
@@ -22,20 +23,17 @@ class SenderTest extends TestCase
         $response = ['status' => true];
         $httpMock = createHttpMock($response);
         $this->withoutExceptionHandling();
-        $sender = new Sender();
-        try {
-            $res = $sender
-                ->setFullName('Sharik Shaikh')
-                ->setStreetAddress('123 Main St')
-                ->setPhoneNumber('826866355')
-                ->setIdType('PA')
-                ->setIdNumber('123ASD')
-                ->setDateOfBirth('1990-01-01')
-                ->create();
-        } catch (\Exception $ex) {
-            dd($ex);
-            dd($ex->getResponse()->getBody()->read(2330));
-        }
+        $sender = new Sender($httpMock);
+        $res = $sender
+            ->setFullName('Sharik Shaikh')
+            ->setStreetAddress('123 Main St')
+            ->setPhoneNumber('826866355')
+            ->setDateOfBirth("2000-10-06T00:00:00")
+            ->setCityId(40706)
+            ->setStateId('NY')
+            ->setIsIndividual(true)
+            ->setCountryIsoCode('US')
+            ->create();
         $this->assertTrue($res['status']);
     }
 
@@ -43,14 +41,14 @@ class SenderTest extends TestCase
     public function it_sets_user_full_name() {
         $fullName = 'Sharik Shaikh';
         $this->instance->setFullName($fullName);
-        $this->assertEquals($fullName, $this->instance->_data['name']);
+        $this->assertEquals($fullName, $this->instance->_data['Name']);
     }
 
     /** @test */
     public function it_sets_user_full_name_as_numbers_and_it_converts_to_string() {
         $fullName = 123123;
         $this->instance->setFullName($fullName);
-        $this->assertEquals($fullName, $this->instance->_data['name']);
+        $this->assertEquals($fullName, $this->instance->_data['Name']);
     }
 
     /** @test */
@@ -64,7 +62,7 @@ class SenderTest extends TestCase
     public function it_sets_user_street_address() {
         $streetAddress = '123 Main St';
         $this->instance->setStreetAddress($streetAddress);
-        $this->assertEquals($streetAddress, $this->instance->_data['address']);
+        $this->assertEquals($streetAddress, $this->instance->_data['Address']);
     }
 
     /** @test */
@@ -92,7 +90,7 @@ class SenderTest extends TestCase
     public function it_sets_phone_number_of_the_user() {
         $phoneNumber = '8268663579';
         $this->instance->setPhoneNumber($phoneNumber);
-        $this->assertEquals($phoneNumber, $this->instance->_data['phone']);
+        $this->assertEquals($phoneNumber, $this->instance->_data['PhoneMobile']);
     }
 
     /** @test */
@@ -120,7 +118,7 @@ class SenderTest extends TestCase
     public function it_sets_id_type() {
         $idType = 'PA';
         $this->instance->setIDType($idType);
-        $this->assertEquals($idType, $this->instance->_data['idType']);
+        $this->assertEquals($idType, $this->instance->_data['IdType']);
     }
 
     /** @test */
@@ -134,7 +132,7 @@ class SenderTest extends TestCase
     public function it_sets_name_in_other_language() {
         $nameInOtherLanguage = 'وصل ';
         $this->instance->setNameInOtherLanguage($nameInOtherLanguage);
-        $this->assertEquals($nameInOtherLanguage, $this->instance->_data['nameOtherLanguage']);
+        $this->assertEquals($nameInOtherLanguage, $this->instance->_data['NameOtherLanguage']);
     }
 
     /** @test */
@@ -148,7 +146,7 @@ class SenderTest extends TestCase
     public function it_sets_address_in_other_language() {
         $address = 'وصل ';
         $this->instance->setAddressOtherLanguage($address);
-        $this->assertEquals($address, $this->instance->_data['addressOtherLanguage']);
+        $this->assertEquals($address, $this->instance->_data['AddressOtherLanguage']);
     }
 
     /** @test */
@@ -169,7 +167,7 @@ class SenderTest extends TestCase
     public function it_sets_home_phone_number() {
         $phone = '3123123123';
         $this->instance->setHomePhone($phone);
-        $this->assertEquals($phone, $this->instance->_data['phoneHome']);
+        $this->assertEquals($phone, $this->instance->_data['PhoneHome']);
     }
 
     /** @test */
@@ -197,7 +195,7 @@ class SenderTest extends TestCase
     public function it_sets_Work_phone_number() {
         $phone = '1234567890';
         $this->instance->setWorkPhone($phone);
-        $this->assertEquals($phone, $this->instance->_data['phoneWork']);
+        $this->assertEquals($phone, $this->instance->_data['PhoneWork']);
     }
 
     /** @test */
@@ -225,7 +223,7 @@ class SenderTest extends TestCase
     public function it_sets_zip_code() {
         $zipCode = '12345';
         $this->instance->setZipCode($zipCode);
-        $this->assertEquals($zipCode, $this->instance->_data['zipCode']);
+        $this->assertEquals($zipCode, $this->instance->_data['ZipCode']);
     }
 
     /** @test */
@@ -246,27 +244,27 @@ class SenderTest extends TestCase
     public function it_sets_city_id() {
         $cityId = 1;
         $this->instance->setCityId($cityId);
-        $this->assertEquals($cityId, $this->instance->_data['cityId']);
+        $this->assertEquals($cityId, $this->instance->_data['CityId']);
     }
 
     /** @test */
     public function it_sets_invalid_city_id() {
-        $this->expectException(ValueNotValidException::class);
-        $cityId = 'ASDSD';
+        $this->expectException(\TypeError::class);
+        $cityId = null;
         $this->instance->setCityId($cityId);
     }
 
     /** @test */
     public function it_sets_state_id() {
-        $stateId = 1;
+        $stateId = "NY";
         $this->instance->setStateId($stateId);
-        $this->assertEquals($stateId, $this->instance->_data['stateId']);
+        $this->assertEquals($stateId, $this->instance->_data['StateId']);
     }
 
     /** @test */
     public function it_sets_invalid_state_id() {
-        $this->expectException(ValueNotValidException::class);
-        $stateId = 'asdkjdf';
+        $this->expectException(\TypeError::class);
+        $stateId = null;
         $this->instance->setStateId($stateId);
     }
 
@@ -274,14 +272,14 @@ class SenderTest extends TestCase
     public function it_sets_country_iso() {
         $countryIsoCode = 'US';
         $this->instance->setCountryIsoCode($countryIsoCode);
-        $this->assertEquals($countryIsoCode, $this->instance->_data['countryIsoCode']);
+        $this->assertEquals($countryIsoCode, $this->instance->_data['CountryIsoCode']);
     }
 
     /** @test */
     public function it_sets_id_number() {
         $idNumber = 'Xx12345yy';
         $this->instance->setIdNumber($idNumber);
-        $this->assertEquals($idNumber, $this->instance->_data['idNumber']);
+        $this->assertEquals($idNumber, $this->instance->_data['IdNumber']);
     }
 
     /** @test */
@@ -295,14 +293,14 @@ class SenderTest extends TestCase
     public function it_sets_id_expiry_date() {
         $expiryDate = '2015-11-20T14:25:43.430-00:00';
         $this->instance->setIdExpiryDate($expiryDate);
-        $this->assertEquals($expiryDate, $this->instance->_data['idExpiryDate']);
+        $this->assertEquals($expiryDate, $this->instance->_data['IdExpiryDate']);
     }
 
     /** @test */
     public function is_sets_nationality_iso_code() {
         $isoCountry = 'US';
         $this->instance->setNationalityIsoCode($isoCountry);
-        $this->assertEquals($isoCountry, $this->instance->_data['nationalityIsoCode']);
+        $this->assertEquals($isoCountry, $this->instance->_data['NationalityIsoCode']);
     }
 
     /** @test */
@@ -316,14 +314,14 @@ class SenderTest extends TestCase
     public function it_sets_dob() {
         $dob = '2015-11-20T14:25:43.430-00:00';
         $this->instance->setDateOfBirth($dob);
-        $this->assertEquals($dob, $this->instance->_data['dateOfBirth']);
+        $this->assertEquals($dob, $this->instance->_data['DateOfBirth']);
     }
 
     /** @test */
     public function it_sets_email_address() {
         $email = 'john@doe.com';
         $this->instance->setEmail($email);
-        $this->assertEquals($email, $this->instance->_data['email']);
+        $this->assertEquals($email, $this->instance->_data['Email']);
     }
 
     /** @test */
@@ -337,13 +335,46 @@ class SenderTest extends TestCase
     public function it_sets_is_individual() {
         $isIndividual = true;
         $this->instance->setIsIndividual($isIndividual);
-        $this->assertTrue($this->instance->_data['isIndividual']);
+        $this->assertTrue($this->instance->_data['IsIndividual']);
     }
 
     /** @test */
     public function it_sets_occupation() {
         $occupationId = 1;
         $this->instance->setSenderOccupation($occupationId);
-        $this->assertEquals($occupationId, $this->instance->_data['senderOccupation']);
+        $this->assertEquals($occupationId, $this->instance->_data['SenderOccupation']);
+    }
+
+    /** @test */
+    public function it_tests_if_validate_returns_no_error() {
+        $data = [
+            'Name' => $this->faker->word,
+            'Address' => $this->faker->streetAddress,
+            'PhoneMobile' => $this->faker->phoneNumber,
+            'CityId' => $this->faker->city,
+            'StateId' => 'FL',
+            'CountryIsoCode' => $this->faker->countryCode,
+            'IsIndividual' => $this->faker->boolean
+        ];
+        $res = $this->instance->_validate($data);
+        $this->assertCount(0, $res['errors']);
+    }
+
+    /** @test */
+    public function it_tests_if_validation_fails_and_returns_proper_missing_keys() {
+        $data = [
+            'Name' => $this->faker->word,
+            'Address' => $this->faker->streetAddress,
+            'PhoneMobile' => $this->faker->phoneNumber,
+            'CountryIsoCode' => $this->faker->countryCode,
+            'IsIndividual' => $this->faker->boolean
+        ];
+
+        $res = $this->instance->_validate($data);
+
+        $this->assertEquals('Missing required values', $res['message']);
+        $this->assertTrue(in_array('StateId', $res['errors']));
+        $this->assertTrue(in_array('CityId', $res['errors']));
+        $this->assertCount(2, $res['errors']);
     }
 }

@@ -10,11 +10,27 @@ class Sender extends TransPayAbstract {
     /** @var array */
     public $_data;
 
+    /** @var array  */
+    public static $requiredFields = [
+        'Name',
+        'Address',
+        'PhoneMobile',
+        'CityId',
+        'StateId',
+        'CountryIsoCode',
+        'IsIndividual'
+    ];
+
     /**
      * @return mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function create() {
+        $validate = $this->_validate($this->_data);
+        if (count($validate['errors']) > 0) {
+            return $validate;
+        }
+//        dd($this->_data);
         $response = $this->_httpClient->request('POST', 'api/transaction/sender', ['json' => $this->_data]);
         return json_decode($response->getBody()->getContents(), true);
     }
@@ -28,7 +44,7 @@ class Sender extends TransPayAbstract {
         if (!$fullName) {
             throw new ValueNotValidException('Invalid Name provided.');
         }
-        $this->_data['name'] = $fullName;
+        $this->_data['Name'] = $fullName;
         return $this;
     }
 
@@ -37,12 +53,13 @@ class Sender extends TransPayAbstract {
      * @param string $address
      * @return Sender
      * @throws ValueNotValidException
+     * @throws InvalidAddressException
      */
     public function setStreetAddress(string $address) : Sender {
         if (!$address || !preg_match('/^[A-Za-z0-9\s]{5,60}$/', $address) || preg_match('/^PO BOX/', $address)) {
             throw new InvalidAddressException('Invalid street address provided. It should not be empty or PO BOX address');
         }
-        $this->_data['address'] = $address;
+        $this->_data['Address'] = $address;
         return $this;
     }
 
@@ -56,7 +73,7 @@ class Sender extends TransPayAbstract {
         if (!$phone || !preg_match('/^[0-9]{7,15}$/', $phone)) {
             throw new ValueNotValidException('Invalid phone number provided.');
         }
-        $this->_data['phone'] = $phone;
+        $this->_data['PhoneMobile'] = $phone;
         return $this;
     }
 
@@ -70,7 +87,7 @@ class Sender extends TransPayAbstract {
         if (!$idType || !preg_match('/^[A-Za-z0-9]{2}$/', $idType)) {
             throw new ValueNotValidException('Invalid ID Type provided');
         }
-        $this->_data['idType'] = $idType;
+        $this->_data['IdType'] = $idType;
         return $this;
     }
 
@@ -84,7 +101,7 @@ class Sender extends TransPayAbstract {
         if (!$name) {
             throw new ValueNotValidException('Invalid name in other language');
         }
-        $this->_data['nameOtherLanguage'] = $name;
+        $this->_data['NameOtherLanguage'] = $name;
         return $this;
     }
 
@@ -98,7 +115,7 @@ class Sender extends TransPayAbstract {
         if (!$address || preg_match('/^[A-Za-z0-9\s]{5,60}$/', $address)) {
             throw new ValueNotValidException('Invalid Address in other language');
         }
-        $this->_data['addressOtherLanguage'] = $address;
+        $this->_data['AddressOtherLanguage'] = $address;
         return $this;
     }
 
@@ -111,7 +128,7 @@ class Sender extends TransPayAbstract {
         if (!$phone || !preg_match('/^[0-9]{7,15}$/', $phone)) {
             throw new ValueNotValidException('Invalid home phone number provided');
         }
-        $this->_data['phoneHome'] = $phone;
+        $this->_data['PhoneHome'] = $phone;
         return $this;
     }
 
@@ -126,7 +143,7 @@ class Sender extends TransPayAbstract {
         if (!$phone || !preg_match('/^[0-9]{7,15}$/', $phone)) {
             throw new ValueNotValidException('Invalid work phone provided');
         }
-        $this->_data['phoneWork'] = $phone;
+        $this->_data['PhoneWork'] = $phone;
         return $this;
     }
 
@@ -141,7 +158,7 @@ class Sender extends TransPayAbstract {
             throw new ValueNotValidException('Invalid Zip Code provided');
         }
 
-        $this->_data['zipCode'] = $zipCode;
+        $this->_data['ZipCode'] = $zipCode;
         return $this;
     }
 
@@ -150,11 +167,11 @@ class Sender extends TransPayAbstract {
      * @return Sender
      * @throws ValueNotValidException
      */
-    public function setCityId(string $cityId) : Sender {
+    public function setCityId(int $cityId) : Sender {
         if (!$cityId || !preg_match('/(?<=\s|^)\d+(?=\s|$)/', $cityId)) {
             throw new ValueNotValidException('Invalid city id');
         }
-        $this->_data['cityId'] = $cityId;
+        $this->_data['CityId'] = $cityId;
         return $this;
     }
 
@@ -165,10 +182,10 @@ class Sender extends TransPayAbstract {
      * @throws ValueNotValidException
      */
     public function setStateId(string $stateId) : Sender {
-        if (!$stateId || preg_match('/^[A-Za-z\s]{2,40}$/', $stateId)) {
+        if (!$stateId || !preg_match('/^[A-Za-z\s]{2,40}$/', $stateId)) {
             throw new ValueNotValidException('Invalid State id');
         }
-        $this->_data['stateId'] = $stateId;
+        $this->_data['StateId'] = $stateId;
         return $this;
     }
 
@@ -183,7 +200,7 @@ class Sender extends TransPayAbstract {
             preg_match('/^[A-Za-z]{2}$/', $countryIsoCode)) {
             throw new ValueNotValidException('Country ISO code is not valid');
         }
-        $this->_data['countryIsoCode'] = $countryIsoCode;
+        $this->_data['CountryIsoCode'] = $countryIsoCode;
         return $this;
     }
 
@@ -196,7 +213,7 @@ class Sender extends TransPayAbstract {
         if (!$idNumber || !preg_match('/^[A-Za-z0-9\s]{1,15}$/', $idNumber)) {
             throw new ValueNotValidException('Invalid id number provided');
         }
-        $this->_data['idNumber'] = $idNumber;
+        $this->_data['IdNumber'] = $idNumber;
         return $this;
     }
 
@@ -209,7 +226,7 @@ class Sender extends TransPayAbstract {
         if (!$expiryDate) {
             throw new ValueNotValidException('Given expiry date is not valid');
         }
-        $this->_data['idExpiryDate'] = $expiryDate;
+        $this->_data['IdExpiryDate'] = $expiryDate;
         return $this;
     }
 
@@ -222,7 +239,7 @@ class Sender extends TransPayAbstract {
         if (!$nationalityIsoCode || !preg_match('/^[A-Za-z]{2}$/', $nationalityIsoCode)) {
             throw new ValueNotValidException('Given value for ISO code is not valid');
         }
-        $this->_data['nationalityIsoCode'] = $nationalityIsoCode;
+        $this->_data['NationalityIsoCode'] = $nationalityIsoCode;
         return $this;
     }
 
@@ -235,7 +252,7 @@ class Sender extends TransPayAbstract {
         if (!$dob) {
             throw new ValueNotValidException('Given date of birth is not provided');
         }
-        $this->_data['dateOfBirth'] = $dob;
+        $this->_data['DateOfBirth'] = $dob;
         return $this;
     }
 
@@ -248,7 +265,7 @@ class Sender extends TransPayAbstract {
         if (!$email || !preg_match('/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/', $email))  {
             throw new ValueNotValidException('Given email address is not valid');
         }
-        $this->_data['email'] = $email;
+        $this->_data['Email'] = $email;
         return $this;
     }
 
@@ -257,7 +274,7 @@ class Sender extends TransPayAbstract {
      * @return Sender
      */
     public function setIsIndividual(bool $isIndividual) : Sender {
-        $this->_data['isIndividual'] = $isIndividual;
+        $this->_data['IsIndividual'] = $isIndividual;
         return $this;
     }
 
@@ -270,8 +287,23 @@ class Sender extends TransPayAbstract {
         if (!$occupationId) {
             throw new ValueNotValidException('Given occupation id is not valid');
         }
-        $this->_data['senderOccupation'] = $occupationId;
+        $this->_data['SenderOccupation'] = $occupationId;
         return $this;
+    }
+
+    /**
+     * @param array $data
+     * @return array
+     */
+    public function _validate(array $data) : array {
+        $missing = array_diff(self::$requiredFields, array_keys($data));
+        if (count($missing) > 0) {
+            return [
+                'message'   => 'Missing required values',
+                'errors'    => array_values($missing)
+            ];
+        }
+        return ['errors' => []];
     }
 
 }
