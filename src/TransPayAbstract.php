@@ -24,7 +24,8 @@ abstract class TransPayAbstract {
      */
     public function __construct($client = null) {
         $this->_setHttpClient($client);
-        $this->_setApiKey(config('transpay.API_KEY'));
+        $apiToken = $this->_getApiKey();
+        $this->_setApiKey($apiToken);
     }
 
     /**
@@ -60,6 +61,17 @@ abstract class TransPayAbstract {
         }
 
         return self::$LIVE_URL;
+    }
+
+    /**
+     * It will return token according to environment
+     * @return \Illuminate\Config\Repository|mixed
+     */
+    public function _getApiKey() {
+        if (app()->environment() == 'testing' || app()->environment() == 'local') {
+            return config('transpay.SANDBOX_TOKEN');
+        }
+        return config('transpay.LIVE_TOKEN');
     }
 
 

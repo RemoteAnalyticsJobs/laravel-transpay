@@ -30,7 +30,13 @@ class TransPayAbstractTest extends TestCase
     /** @test */
     public function it_tests_if_api_token_can_be_set() {
         $instance = $this->getMockForAbstractClass(TransPayAbstract::class);
-        $this->assertEquals(env('TRANSPAY_API_KEY'), $instance->_apiKey);
+        $this->assertEquals(env('TRANSPAY_SANDBOX_TOKEN'), $instance->_apiKey);
+    }
+
+    /** @test */
+    public function it_gets_token_for_sandbox() {
+        $instance = $this->getMockForAbstractClass(TransPayAbstract::class);
+        $this->assertEquals(env('TRANSPAY_SANDBOX_TOKEN'), $instance->_apiKey);
     }
 
 }
