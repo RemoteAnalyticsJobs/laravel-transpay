@@ -10,8 +10,12 @@ class Sender extends TransPayAbstract {
     /** @var array */
     public $_data;
 
-    public function create(array $data) {
-        $response = $this->_httpClient->request('api/transaction/sender', $data);
+    /**
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function create() {
+        $response = $this->_httpClient->request('POST', 'api/transaction/sender', ['json' => $this->_data]);
         return json_decode($response->getBody()->getContents(), true);
     }
 

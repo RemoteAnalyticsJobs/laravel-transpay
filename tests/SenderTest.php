@@ -21,16 +21,21 @@ class SenderTest extends TestCase
     public function it_tests_if_sender_id_can_be_created() {
         $response = ['status' => true];
         $httpMock = createHttpMock($response);
-        $sender = new Sender($httpMock);
-        $res = $sender
-                ->create([
-                    'name' => 'Sharik Shaikh',
-                    'address' => '123 Main st',
-                    'phoneMobile' => '1234567890',
-                    'TypeOfId' => 'PA',
-                    'IdNumber' => '12345677',
-                    'DateOfBirth' =>'1994-09-06',
-                ]);
+        $this->withoutExceptionHandling();
+        $sender = new Sender();
+        try {
+            $res = $sender
+                ->setFullName('Sharik Shaikh')
+                ->setStreetAddress('123 Main St')
+                ->setPhoneNumber('826866355')
+                ->setIdType('PA')
+                ->setIdNumber('123ASD')
+                ->setDateOfBirth('1990-01-01')
+                ->create();
+        } catch (\Exception $ex) {
+            dd($ex);
+            dd($ex->getResponse()->getBody()->read(2330));
+        }
         $this->assertTrue($res['status']);
     }
 

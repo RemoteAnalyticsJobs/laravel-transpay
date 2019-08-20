@@ -23,9 +23,9 @@ abstract class TransPayAbstract {
      * @param null $client
      */
     public function __construct($client = null) {
-        $this->_setHttpClient($client);
         $apiToken = $this->_getApiKey();
         $this->_setApiKey($apiToken);
+        $this->_setHttpClient($client);
     }
 
     /**
@@ -35,7 +35,11 @@ abstract class TransPayAbstract {
     public function _setHttpClient($client) : TransPayAbstract {
         if (is_null($client)) {
             $this->_httpClient = new Client([
-                'base_url' => self::_getBaseUrl()
+                'base_uri' => self::_getBaseUrl(),
+                'headers' => [
+                    'Authorization' => 'Credentials '.$this->_apiKey,
+                    'Content-Type'  => 'application/json'
+                ]
             ]);
             return $this;
         }
